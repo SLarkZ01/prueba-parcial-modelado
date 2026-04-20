@@ -1,0 +1,61 @@
+name: CI Backend
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-and-openapi:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: techstock_db
+          POSTGRES_USER: techstock_user
+          POSTGRES_PASSWORD: techstock_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U techstock_user -d techstock_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/techstock_db
+      DB_USERNAME: techstock_user
+      DB_PASSWORD: techstock_pass
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Grant execute permissions
+        run: chmod +x mvnw scripts/export-openapi.sh
+
+      - name: Run tests
+        run: ./mvnw -q test
+
+      - name: Export OpenAPI
+        run: scripts/export-openapi.sh
+
+      - name: Validate OpenAPI files
+        run: |
+          test -f docs/openapi/openapi.json
+          test -f docs/openapi/openapi.yaml
+
+      - name: Upload OpenAPI artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-spec
+          path: docs/openapi/*
