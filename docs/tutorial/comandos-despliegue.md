@@ -197,6 +197,7 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       JPA_DDL_AUTO: ${JPA_DDL_AUTO}
       SERVER_HTTP2_ENABLED: ${SERVER_HTTP2_ENABLED}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS}
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
@@ -262,6 +263,7 @@ IMAGE_URI=291328562559.dkr.ecr.us-east-2.amazonaws.com/techstock-backend:latest
 SPRING_PROFILES_ACTIVE=prod
 JPA_DDL_AUTO=update
 SERVER_HTTP2_ENABLED=false
+JAVA_TOOL_OPTIONS=-XX:+UseSerialGC -Xms128m -Xmx256m -XX:MaxMetaspaceSize=128m -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom
 
 POSTGRES_DB=techstock_db
 POSTGRES_USER=techstock_user
@@ -281,6 +283,7 @@ Que define este `.env`:
 - `SPRING_PROFILES_ACTIVE`: perfil de ejecucion del backend (`prod`).
 - `JPA_DDL_AUTO`: estrategia de schema en runtime (`update` recomendado para este despliegue).
 - `SERVER_HTTP2_ENABLED`: activa HTTP/2 en Jetty (`false` recomendado para evitar error de arranque por modulo faltante).
+- `JAVA_TOOL_OPTIONS`: limite de memoria de la JVM para evitar `Out of memory` en instancias pequenas.
 - `POSTGRES_DB`: nombre de la base de datos.
 - `POSTGRES_USER`: usuario de PostgreSQL.
 - `POSTGRES_PASSWORD`: clave de PostgreSQL.
@@ -290,6 +293,25 @@ Que define este `.env`:
 - `DB_URL` no va directo en `.env`; se construye en `docker-compose.ec2.yml` para backend como:
   - `jdbc:postgresql://postgres:5432/${POSTGRES_DB}`
 - `DB_USERNAME` y `DB_PASSWORD` del backend usan `POSTGRES_USER` y `POSTGRES_PASSWORD`.
+
+### 9.3 Crear swap en EC2 (recomendado para evitar OOM)
+```bash
+sudo fallocate -l 2G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+free -h
+```
+
+Si tu instancia es micro/small y sigue con alta presion de memoria, usa tuning conservador en `.env`:
+
+```text
+DB_POOL_MAX_SIZE=3
+DB_POOL_MIN_IDLE=1
+JETTY_THREADS_MAX=30
+JETTY_THREADS_MIN=4
+```
 
 ### 9.4 Verificar archivos creados
 ```bash
@@ -414,6 +436,21 @@ Solucion:
 docker compose --env-file .env -f docker-compose.ec2.yml pull
 docker compose --env-file .env -f docker-compose.ec2.yml up -d --force-recreate backend
 docker compose --env-file .env -f docker-compose.ec2.yml ps
+```
+
+### 14.6 `Out of memory: Killed process (java)`
+Causa: la instancia se queda sin RAM y el kernel mata la JVM.
+Solucion:
+
+1. Limitar memoria del backend con `JAVA_TOOL_OPTIONS` en `.env` (incluido en esta guia).
+2. Crear swap de 2 GB (seccion 9.3).
+3. Bajar `DB_POOL_MAX_SIZE` y `JETTY_THREADS_MAX` para instancias pequenas.
+4. Re-crear backend:
+
+```bash
+docker compose --env-file .env -f docker-compose.ec2.yml up -d --force-recreate backend
+docker compose --env-file .env -f docker-compose.ec2.yml ps
+docker inspect techstock-backend --format '{{.State.Health.Status}}'
 ```
 
 ## 15) Notas de seguridad para produccion

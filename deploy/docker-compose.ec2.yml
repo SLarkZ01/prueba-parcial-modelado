@@ -5,6 +5,9 @@ services:
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      JPA_DDL_AUTO: ${JPA_DDL_AUTO}
+      SERVER_HTTP2_ENABLED: ${SERVER_HTTP2_ENABLED}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS}
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
