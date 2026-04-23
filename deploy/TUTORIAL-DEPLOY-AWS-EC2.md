@@ -13,7 +13,7 @@ Este tutorial sigue la arquitectura propuesta: backend y base de datos en EC2 co
 
 En AWS, crea el repositorio de imagen:
 
-- Nombre sugerido: `techstock-backend`
+- Nombre sugerido: `prueba-redes`
 
 ## 3) Preparar EC2
 
@@ -22,8 +22,8 @@ En la instancia EC2:
 1. Crear carpeta del proyecto:
 
 ```bash
-mkdir -p ~/techstock-backend
-cd ~/techstock-backend
+mkdir -p ~/prueba
+cd ~/prueba
 ```
 
 2. Copiar `docker-compose.ec2.yml` desde este repo (`deploy/docker-compose.ec2.yml`)
@@ -32,7 +32,7 @@ cd ~/techstock-backend
 Archivo `.env` minimo:
 
 ```env
-IMAGE_URI=<aws_account_id>.dkr.ecr.<region>.amazonaws.com/techstock-backend:latest
+IMAGE_URI=<aws_account_id>.dkr.ecr.<region>.amazonaws.com/prueba-redes:latest
 POSTGRES_DB=techstock_db
 POSTGRES_USER=techstock_user
 POSTGRES_PASSWORD=cambia_esta_clave

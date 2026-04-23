@@ -1,7 +1,7 @@
 services:
   backend:
     image: ${IMAGE_URI}
-    container_name: techstock-backend
+    container_name: prueba-redes-backend
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
@@ -30,7 +30,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: techstock-postgres
+    container_name: prueba-redes-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}

@@ -110,7 +110,7 @@ Muestra logs de error de una ejecucion.
 ## 5) Build local de imagen backend
 
 ```bash
-docker build -t techstock-backend:local .
+docker build -t prueba-redes:local .
 ```
 Construye imagen local para validar Dockerfile.
 
@@ -180,8 +180,8 @@ docker compose version
 ## 9) Crear archivos de despliegue en EC2 (carpeta de trabajo)
 
 ```bash
-mkdir -p ~/techstock-backend
-cd ~/techstock-backend
+mkdir -p ~/prueba
+cd ~/prueba
 ls -la
 ```
 
@@ -191,7 +191,7 @@ cat > docker-compose.ec2.yml <<'EOF'
 services:
   backend:
     image: ${IMAGE_URI}
-    container_name: techstock-backend
+    container_name: prueba-redes-backend
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
@@ -258,7 +258,7 @@ EOF
 ### 9.2 Crear `.env` (conexion de PostgreSQL y backend)
 ```bash
 cat > .env <<'EOF'
-IMAGE_URI=291328562559.dkr.ecr.us-east-2.amazonaws.com/techstock-backend:latest
+IMAGE_URI=291328562559.dkr.ecr.us-east-2.amazonaws.com/prueba-redes:latest
 
 SPRING_PROFILES_ACTIVE=prod
 JPA_DDL_AUTO=update
@@ -315,13 +315,13 @@ JETTY_THREADS_MIN=4
 
 ### 9.4 Verificar archivos creados
 ```bash
-ls -la ~/techstock-backend
+ls -la ~/prueba
 ```
 
 ## 10) Probar despliegue manual en EC2 (opcional, recomendado)
 
 ```bash
-cd ~/techstock-backend
+cd ~/prueba
 aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 291328562559.dkr.ecr.us-east-2.amazonaws.com
 docker compose --env-file .env -f docker-compose.ec2.yml pull
 docker compose --env-file .env -f docker-compose.ec2.yml up -d
@@ -331,7 +331,7 @@ docker compose --env-file .env -f docker-compose.ec2.yml ps
 Validar estado de health del backend:
 
 ```bash
-docker inspect techstock-backend --format '{{json .State.Health}}'
+docker inspect prueba-redes-backend --format '{{json .State.Health}}'
 ```
 
 Si actualizaste `Dockerfile` o el `healthcheck`, fuerza recreacion del backend:
@@ -343,7 +343,7 @@ docker compose --env-file .env -f docker-compose.ec2.yml up -d --force-recreate 
 Si hiciste build manual en EC2 (sin ECR), puedes construir y levantar asi:
 
 ```bash
-docker build -t techstock-backend:manual .
+docker build -t prueba-redes:manual .
 ```
 
 ## 11) Deploy automatico por GitHub Actions
@@ -383,7 +383,7 @@ Agregar inbound:
 
 ### 13.2 En EC2 crear `Caddyfile`
 ```bash
-cd ~/techstock-backend
+cd ~/prueba
 cat > Caddyfile <<'EOF'
 parcial-redes.duckdns.org {
   reverse_proxy backend:8080
@@ -450,7 +450,7 @@ Solucion:
 ```bash
 docker compose --env-file .env -f docker-compose.ec2.yml up -d --force-recreate backend
 docker compose --env-file .env -f docker-compose.ec2.yml ps
-docker inspect techstock-backend --format '{{.State.Health.Status}}'
+docker inspect prueba-redes-backend --format '{{.State.Health.Status}}'
 ```
 
 ## 15) Notas de seguridad para produccion

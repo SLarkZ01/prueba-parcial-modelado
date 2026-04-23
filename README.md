@@ -163,7 +163,7 @@ Archivos generados:
 ## 🔐 Variables criticas de produccion (.env en EC2)
 
 ```env
-IMAGE_URI=<account>.dkr.ecr.<region>.amazonaws.com/techstock-backend:latest
+IMAGE_URI=<account>.dkr.ecr.<region>.amazonaws.com/prueba-redes:latest
 SPRING_PROFILES_ACTIVE=prod
 JPA_DDL_AUTO=update
 SERVER_HTTP2_ENABLED=false

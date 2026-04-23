@@ -12,7 +12,7 @@ on:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPOSITORY: techstock-backend
+  ECR_REPOSITORY: prueba-redes
 
 jobs:
   deploy:
@@ -50,8 +50,8 @@ jobs:
           envs: AWS_REGION,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY
           script: |
             set -e
-            mkdir -p ~/techstock-backend
-            cd ~/techstock-backend
+            mkdir -p ~/prueba
+            cd ~/prueba
 
             if [ ! -f docker-compose.ec2.yml ]; then
               echo "Falta docker-compose.ec2.yml en EC2. Copialo desde deploy/docker-compose.ec2.yml"
